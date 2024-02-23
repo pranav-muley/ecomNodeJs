@@ -1,0 +1,5 @@
+1.counter collection (_id:cartID,value=0)
+
+2. while adding cart items, increment the counter and use the
+    counter value as id to cartitem document;
+    

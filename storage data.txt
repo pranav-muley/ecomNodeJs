@@ -1,0 +1,13 @@
+Sotrage = persistent storage need to store api data user data.
+types of database- 
+    1.relational database Row/col format
+    2. No SQL database JSON format.
+    3. Object oriented 
+    4 heirarchical
+
+Schema- structure of data be look like/
+
+INMongo DB-> 
+Tables called-> Collection
+ROW = > Document.
+Column => Attribute
