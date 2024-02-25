@@ -41,12 +41,12 @@ class UserRepository{
 
     async signin(email,password){
         try {
-            const hashedPassword =  await bcrypt.hash(password, 7)
-                .then(userHash=>userHash)
-                .catch((err)=>{
-                    return res.status(400).send("Password not able to hash..")
-                });
-            let user = await UserModel.findOne({email:email},{password:hashedPassword});
+            // const hashedPassword =  await bcrypt.hash(password, 7)
+            //     .then(userHash=>userHash)
+            //     .catch((err)=>{
+            //         return res.status(400).send("Password not able to hash..")
+            //     });
+            let user = await UserModel.findOne({email:email},{password:password});
             return user;
         } catch (err) {
             console.log(err);

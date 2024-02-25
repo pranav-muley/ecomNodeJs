@@ -1,6 +1,6 @@
 const { getDB } = require("../../config/mongodb");
 const ApplicationError = require("../../error-handler/applicationError");
-const bcrypt = require('bcrypt');
+// const bcrypt = require('bcrypt');
 class UserRepository{
 
     async signUp(newUser){
@@ -11,13 +11,13 @@ class UserRepository{
             // 2. get the Collection
             const collection = db.collection("users")
             // console.log(newUser);
-            const newPassword = await bcrypt.hash(newUser.password, 7)
-                .then(userHash=>userHash)
-                .catch((err)=>{
-                    return res.status(400).send("Password not able to hash..")
-                });
+            // const newPassword = await bcrypt.hash(newUser.password, 7)
+                // .then(userHash=>userHash)
+                // .catch((err)=>{
+                //     return res.status(400).send("Password not able to hash..")
+                // });
             // 3. to insert the document;
-            newUser.password = newPassword;
+            // newUser.password = newPassword;
            await collection.insertOne(newUser);
            return newUser;
         }catch(err){

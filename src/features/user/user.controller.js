@@ -1,7 +1,7 @@
 const UserModel = require("./user.model");
 const jwt = require('jsonwebtoken');
 // const UserRepository = require("./user.repository");
-const bcrypt = require('bcrypt');
+// const bcrypt = require('bcrypt');
 const UserRepository = require("./user.repositoryNew");
 
 
