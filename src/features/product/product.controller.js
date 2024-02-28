@@ -18,7 +18,8 @@ class ProductController {
             //returning data to view instead of render.
             res.status(200).send(product);
         } catch (err) {
-            
+            console.log(err);
+            return res.status(404).send("Someting went Wrong. while fetching product..");
         }
 
         
@@ -28,9 +29,9 @@ class ProductController {
         try {
             const {name,price,sizes,imageUrl,category,desc} = req.body;
             console.log(req.body);
-
+            
             const newProduct = new ProductModel(name,desc,imageUrl,category,parseFloat(price),sizes);
-               console.log("NewProduct ",newProduct);
+            //    console.log("NewProduct ",newProduct);
             const createdRecord = await this.productRepository.add(newProduct);
             res.status(201).send(createdRecord);
 

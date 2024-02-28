@@ -16,6 +16,7 @@ const productController = new ProductController();
 //all path to control method
 
 router.get('/',(req,res)=>{
+    
     productController.getAllProducts(req,res);
 });
 

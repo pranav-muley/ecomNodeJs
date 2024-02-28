@@ -5,7 +5,8 @@ const productSchema = new mongoose.Schema({
     price:Number,
     category:String,
     desc:String,
-    inStock:Number
+    inStock:Number,
+    ratings:[],
 })
 
 module.exports = productSchema;
