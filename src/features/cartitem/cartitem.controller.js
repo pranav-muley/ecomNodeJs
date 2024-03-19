@@ -15,8 +15,6 @@ class CartItemsController {
         // console.log("cartiem addinf post userid",userID," ",productID,quantity);
         //add validation for product;
 
-        // ....
-
         this.cartItemRepository.add(productID,userID,quantity);
         res.status(201).send('Cart is Updated.');
     }

@@ -18,12 +18,12 @@ class CartItemRepository{
 
             const cartModel = await mongoose.model("cartItems",cartSchema);
             // const id = await this.getNextCounter(db);
-            console.log(cartModel);
+            // console.log(cartModel);
             const isPresent = await cartModel.find({productID,userID}).then((res)=>{
                 console.log(res);
             }).catch((err)=>{console.log(err);})
 
-            console.log("ispresent?/ ",isPresent);
+            // console.log("ispresent?/ ",isPresent);
             if(!isPresent){
 
                await cartModel.create({
@@ -76,18 +76,18 @@ class CartItemRepository{
         }
     }
 
-    async getNextCounter(db){
+    // async getNextCounter(db){
 
-        const resultDocument = await db.collection("counters").findOneAndUpdate(
-            {_id:'cartItemId'},
-            {$inc:{value:1}},
-            //return orignal document so in option to get updated we have to set 
-            {returnDocument:'after'}
-        )
+    //     const resultDocument = await db.collection("counters").findOneAndUpdate(
+    //         {_id:'cartItemId'},
+    //         {$inc:{value:1}},
+    //         //return orignal document so in option to get updated we have to set 
+    //         {returnDocument:'after'}
+    //     )
 
-        console.log(resultDocument);
-        return resultDocument.value.value;
-    } 
+    //     console.log(resultDocument);
+    //     return resultDocument.value.value;
+    // } 
 
 }
 module.exports = CartItemRepository;
