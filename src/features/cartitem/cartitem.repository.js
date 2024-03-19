@@ -1,5 +1,7 @@
 const { ObjectId } = require('mongodb');
-const {getDB} = require('../../config/mongodb')
+const {getDB} = require('../../config/mongodb');
+const { default: mongoose } = require('mongoose');
+const cartSchema = require('./cartItem.schema');
 
 class CartItemRepository{
     constructor(){
@@ -8,23 +10,33 @@ class CartItemRepository{
 
     async add(productID,userID,quantity){
         try{
+            
             //get database
-            const db = getDB();
-            //get collection
-            const collection = db.collection(this.collection);
-            const id = await this.getNextCounter(db);
-            const isPresent = await collection.findOne({productID,userID});
-            // console.log(isPresent);
+            // const db = getDB();
+            // //get collection
+            // const collection = db.collection(this.collection);
+
+            const cartModel = await mongoose.model("cartItems",cartSchema);
+            // const id = await this.getNextCounter(db);
+            console.log(cartModel);
+            const isPresent = await cartModel.find({productID,userID}).then((res)=>{
+                console.log(res);
+            }).catch((err)=>{console.log(err);})
+
+            console.log("ispresent?/ ",isPresent);
             if(!isPresent){
-                await collection.insertOne({
-                    _id:id,
-                    productID,userID,quantity
+
+               await cartModel.create({
+                    // _id:id,
+                    quantity,
+                    productID,userID
                 })
             }
             else{
-                await collection.updateOne({userID,productID},
-                    {$inc:{quantity:quantity}}
+                const product = await cartModel.findOneAndUpdate({userID,productID},
+                    {quantity}
                 );
+                console.log(product);
             }
         }
         catch(err){
@@ -33,12 +45,16 @@ class CartItemRepository{
         }
     }
 
-    async get(userID){
+    async get(userID,productID){
         try{
-            const db = getDB();
-            const collection = db.collection(this.collection);
-            return await collection.find({userID}).toArray();
-
+            // const db = getDB();
+            // const collection = db.collection(this.collection);
+            const cartModel =  mongoose.model('cartItems',cartSchema);
+           
+            // return await cartModel.findOne({userID});
+            const prod = await cartModel.find({productID : new ObjectId(productID)});
+            console.log(prod);
+            return prod;
         }catch(err){
             console.log(err);
         }

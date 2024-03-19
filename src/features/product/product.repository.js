@@ -4,12 +4,19 @@ const ApplicationError = require('../../error-handler/applicationError');
 const { getAll } = require('../user/user.model');
 const  mongoose  = require('mongoose');
 const productSchema = require('./product.schema');
-const ProductModel = require('./product.model');
+// const ProductModel = require('./product.model');
+const reviewSchema = require('./review.schema');
+const categorySchema = require('./category.schema');
+
+
+const ProductModel =  mongoose.model('Product',productSchema);
+const ReviewModel = mongoose.model('Review',reviewSchema);
+const CategoryModel = mongoose.model('Category',categorySchema);
 
 class ProductRepository{
-    constructor(){
-        this.collection = "products";
-    }
+    // constructor(){
+    //     this.collection = "Products";
+    // }
 
     // async add(newProduct){
     //     try {
@@ -27,21 +34,53 @@ class ProductRepository{
     //     }
     // }
 
-    async add(newProduct){
+    async add(productData){
         try {
             //model created...
-            const productModel = mongoose.model('products',productSchema);
-            console.log(newProduct);
-            const record = await productModel.create({
-                name:newProduct.name,
-                price: newProduct.price,
-                desc: newProduct.desc,
-                category:newProduct.category,
-                sizes:newProduct.sizes,
-                imageUrl:newProduct.imageUrl,
+            // const productModel = mongoose.model('products',productSchema);
+            // console.log(newProduct);
+            // const record = await productModel.create({
+            //     name:newProduct.name,
+            //     price: newProduct.price,
+            //     desc: newProduct.desc,
+            //     category:newProduct.category,
+            //     sizes:newProduct.sizes,
+            //     imageUrl:newProduct.imageUrl,
                 
-            });
-            return record;
+            // });
+            // return record;
+
+            //1 add the product
+            const duplicateProduct = await ProductModel.findOne({name:productData.name});
+            if(duplicateProduct){
+
+                return "Already Added....";
+            }
+            const newProduct = new ProductModel(productData);
+            newProduct.save();
+            if(productData.sizes!==0){
+                await newProduct.aggregate([
+                    
+                        {
+                            $addFields:{"sizes":productData.sizes}
+                        }
+                    
+                ]);
+            }
+            console.log(productData,"\n **********************");
+            const categories = productData.categories.trim().split(',');
+            productData.categories = categories;
+            
+            console.log(newProduct);
+            return;
+            const savedProduct = await newProduct.save();
+            console.log(savedProduct._doc);
+
+            //2.update the categories
+            for(let category of categories){
+                await CategoryModel.updateOne({_id: category},{$push:{"products": savedProduct._doc._id}})
+            }
+
         } catch (err) {
             console.log(err);
             throw new ApplicationError("Something went wrong while geting products",500);
@@ -60,9 +99,10 @@ class ProductRepository{
     // }
     async getAll(){
         try {
-            const productModel = mongoose.model('products',productSchema);
-            //create instance of model;
-            const products = await productModel.find({});
+            // const productModel = mongoose.model('products',productSchema);
+            // //create instance of model;
+            // const products = await productModel.find({});
+            const products = await ProductModel.find({});
             return products;
         } catch (err) {
             console.log(err);
@@ -78,8 +118,9 @@ class ProductRepository{
         //    const product = await collection.findOne({_id:id});
         // //    console.log(product);
 
-        const productModel = mongoose.model('products',productSchema);
-        const product = await productModel.$where({_id:new ObjectId(id)});
+        // const productModel = mongoose.model('products',productSchema);
+        // const product = await productModel.$where({_id:new ObjectId(id)});
+        const product = await ProductModel.findById({_id: new ObjectId(id)});//projection means what u want to show.
            return product;
         } catch (error) {
             console.log(error);
@@ -119,10 +160,8 @@ class ProductRepository{
 
 
         try {
-            
-            const productModel = mongoose.model('products',productSchema);
-            
-
+            const products = await ProductModel.find({"price":{$gt:minPrice}});
+            return products;
         } 
         catch(err){
             console.log(err);
@@ -200,25 +239,28 @@ class ProductRepository{
             //     }
             // )
             
-            const productModel = mongoose.model('products',productSchema);
-            //get product to rate
-            const product = await productModel.findById({_id:new ObjectId(productId)});
-            // console.log(product.ratings);
-            if(product.ratings.length==0){
-                product.ratings.push({userID,rating});
+            //1.checck if Product Existing 
+            const productToUpdate = await ProductModel.findById((productId));
+            if(!productToUpdate){
+                throw new Error("Product Not Found!!!");
             }
-            var found = false;
-            for(var i = 0;i<product.ratings.length;i++){
-                if(product.ratings[i].userID== userID){
-                    found = true;
-                    product.ratings[i].rating = rating;
-                }
+            //2. Get the Existing review
+            const userReview = await ReviewModel.findOne({product:new ObjectId(productId), user:new ObjectId(userID)});
+
+            if(userReview){
+                userReview.rating = rating;
+                await userReview.save();
             }
-            if(found == false){
-                product.ratings.push({userID,rating});
+            else{
+                //create new review.
+                const newReview = new ReviewModel({
+                    product: new ObjectId(productId),
+                    user: new ObjectId(userID),
+                    rating : rating,
+                })
+                await newReview.save();
             }
-            return await productModel.findByIdAndUpdate({_id:new ObjectId(product._id)}, product);
-            
+            await ProductModel.updateOne({_id: new ObjectId(productId)},{"reviews":userReview._id});
         }
          catch (error) {
             console.log(error);
@@ -227,19 +269,35 @@ class ProductRepository{
     }
     async averageProductPricePerCategory(){
         try {
-            const db = getDB();
-            //pipeline created...
-            return await db.collection(this.collection)
-                .aggregate([
-                    {
-                        //stage1: Get avg price per category
-                        $group:{
-                            _id:'category',
-                            averagePrice:{$avg:"$price"}
-                        }
+            // const db = getDB();
+            // //pipeline created...
+            // return await db.collection(this.collection)
+            //     .aggregate([
+            //         {
+            //             //stage1: Get avg price per category
+            //             $group:{
+            //                 _id:'category',
+            //                 averagePrice:{$avg:"$price"}
+            //             }
 
-                    }
-                ]).toArray();
+            //         }
+            //     ]).toArray();
+
+            const categories = await CategoryModel.find({});
+            let avgProductPricePerCat = [] ;
+            var i =0;
+            
+            for(let category of categories){
+                var sumPrice = 0;
+                var numberOfProducts = 0;
+                for(let product of category.products){
+                    sumPrice+=product.price;
+                    numberOfProducts++; 
+                }
+                var avgPrice = Math.round(sumPrice/numberOfProducts);
+                avgProductPricePerCat[i++] = {category:avgPrice};
+            }
+            return avgProductPricePerCat;
         }
         catch (error) {
             console.log(error);

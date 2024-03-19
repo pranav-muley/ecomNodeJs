@@ -84,7 +84,7 @@ class ProductModel{
     }
 }
 
-   const products = [{}];
+//    const products = [{}];
 
 
 module.exports = ProductModel;

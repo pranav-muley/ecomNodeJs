@@ -12,7 +12,7 @@ class CartItemsController {
     add(req,res){
         const {productID,quantity} = req.body;
         const userID = req.userID;
-        // console.log("cartiem addinf post userid",userID);
+        // console.log("cartiem addinf post userid",userID," ",productID,quantity);
         //add validation for product;
 
         // ....
@@ -24,8 +24,9 @@ class CartItemsController {
     async get(req,res){
         try{
         const userID = req.userID;
+        const productID = req.productID;
         // console.log("USer ID ",req.userID);
-        const items = await this.cartItemRepository.get(userID);
+        const items = await this.cartItemRepository.get(userID,productID);
         return res.status(200).send(items);
         }
         catch(err){

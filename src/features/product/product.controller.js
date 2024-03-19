@@ -27,13 +27,17 @@ class ProductController {
 
     async addProduct(req,res){
         try {
-            const {name,price,sizes,imageUrl,category,desc} = req.body;
-            console.log(req.body);
+            const {name,price,sizes,imageUrl,categories,desc} = req.body;
+            // console.log(req.body);
             
-            const newProduct = new ProductModel(name,desc,imageUrl,category,parseFloat(price),sizes);
-            //    console.log("NewProduct ",newProduct);
-            const createdRecord = await this.productRepository.add(newProduct);
-            res.status(201).send(createdRecord);
+            // const newProduct = new ProductModel(name,desc,imageUrl,category,parseFloat(price),sizes);
+            // //    console.log("NewProduct ",newProduct);
+            // const createdRecord = await this.productRepository.add(newProduct);
+            
+            const newProduct = await this.productRepository.add({name,desc,imageUrl,price,categories,
+            sizes});
+
+            res.status(201).send(newProduct);
 
         } catch (err) {
             console.log(err);
@@ -63,7 +67,7 @@ class ProductController {
             }
         }catch(err){
             console.log(err);
-            throw new ApplicationError("Something went wrong while rating ",500);
+            // throw new ApplicationError("Something went wrong while rating ",500);
         }
        
     }
